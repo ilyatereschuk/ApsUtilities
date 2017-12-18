@@ -35,10 +35,10 @@ namespace AtsUtilities.DpsLookUp
             //Instantiate web browser simulator
             onStepChanged("Instantiating PhantomJS...", 0);
             var driverService = PhantomJSDriverService.CreateDefaultService();
+            driverService.HideCommandPromptWindow = true;
+            var webDriver = new PhantomJSDriver(driverService);
             try
             {
-                driverService.HideCommandPromptWindow = true;
-                var webDriver = new PhantomJSDriver(driverService);
                 //Navigate to the initial login page
                 onStepChanged("Navigating to initial page...", 25);
                 webDriver.Navigate().GoToUrl(DpsLookUpParser.InitialUrl);
@@ -98,11 +98,13 @@ namespace AtsUtilities.DpsLookUp
             catch (Exception exception)
             {
                 driverService.Dispose();
+                webDriver.Quit();
                 throw exception;
             }
             finally
             {
                 driverService.Dispose();
+                webDriver.Quit();
             }
         }
 

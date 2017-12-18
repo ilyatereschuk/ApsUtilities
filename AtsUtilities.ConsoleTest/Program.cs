@@ -20,22 +20,30 @@ namespace AtsUtilities.ConsoleTest
                 searchBy = arguments[2],
                 query = arguments[3];
 
-            DpsLookUpParser.GetDpsLookupHtmlResult(
-                userName,
-                passWord,
-                searchBy,
-                query,
-                (String stepChangedMessage, Int32 progressChangedValue) =>
-                {
-                    Console.WriteLine("{0} ({1}%)", stepChangedMessage, progressChangedValue);
-                },
-                (String htmlResult) =>
-                {
-                    Console.WriteLine(htmlResult);
-                    Console.WriteLine("Press ENTER to exit");
-                    Console.ReadLine();
-                }
-            );
+
+            try
+            { 
+                DpsLookUpParser.GetDpsLookupHtmlResult(
+                    userName,
+                    passWord,
+                    searchBy,
+                    query,
+                    (String stepChangedMessage, Int32 progressChangedValue) =>
+                    {
+                        Console.WriteLine("{0} ({1}%)", stepChangedMessage, progressChangedValue);
+                    },
+                    (String htmlResult) =>
+                    {
+                        Console.WriteLine(htmlResult);
+                        Console.WriteLine("Press ENTER to exit");
+                        Console.ReadLine();
+                    }
+                );
+            }
+            catch(Exception exception)
+            {
+                Console.WriteLine("Error: " + exception.Message);
+            }
         }
     }
 }
