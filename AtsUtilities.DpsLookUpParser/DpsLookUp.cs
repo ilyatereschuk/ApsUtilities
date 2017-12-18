@@ -2,6 +2,7 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.PhantomJS;
+using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,8 @@ namespace AtsUtilities.DpsLookUpParser
 {
     public class DpsLookUp
     {
+        private static readonly String InitialUrl = "http://www.autotitleservice.com/DPS/Account/Login?ReturnUrl=%2fDPS";
+
         private static readonly TimeSpan Timeout = new TimeSpan(0, 0, 10);
 
         private static void WaitUntilPageIsLoaded(IWebDriver webDriver)
@@ -35,110 +38,62 @@ namespace AtsUtilities.DpsLookUpParser
             Action<String> onStepChanged,
             Action<Int32> onProgressPercentageChanged)
         {
-            //http://www.autotitleservice.com/DPS/Account/Login?ReturnUrl=%2fDPS
-
-            /*
-              the email is: jboesch@abctitle.com the password is: notary123
-            the VIN Number you can test with is: 2GCEC13T861244730
-            The license plate number you can test with is: YLL248
-            Please also test failed conditions. Thanks. VM LM
-             */
-            //vimnumber / licensenumber
-
-            String initialAddress = "http://www.autotitleservice.com/DPS/Account/Login?ReturnUrl=%2fDPS";
-
-            /*
-             new WebDriverWait(driver, MyDefaultTimeout).Until(
-    d => ((IJavaScriptExecutor) d).ExecuteScript("return document.readyState").Equals("complete"));
-             */
-
             //Instantiate web browser simulator
-            var webDriver = new PhantomJSDriver();
+            var driverService = PhantomJSDriverService.CreateDefaultService();
+            driverService.HideCommandPromptWindow = true;
+            var webDriver = new PhantomJSDriver(driverService);
             //Navigate to the initial login page
-            webDriver.Navigate().GoToUrl(initialAddress);
+            webDriver.Navigate().GoToUrl(DpsLookUp.InitialUrl);
             //Wait until page is loaded and login button is available
             var buttonLogin =
                  (new WebDriverWait(webDriver, DpsLookUp.Timeout))
                  .Until(ExpectedConditions.ElementExists(By.Id("btnLogin")));
-            //Get login and password fields
-            var fieldUserName = webDriver.FindElement(By.Name("UserName"));
-            var fieldPassWord = webDriver.FindElement(By.Name("Password"));
-            //Populate these fields
-            fieldUserName.SendKeys(userName);
-            fieldPassWord.SendKeys(passWord);
+            //Populate login and password fields
+            webDriver.FindElement(By.Name("UserName")).SendKeys(userName);
+            webDriver.FindElement(By.Name("Password")).SendKeys(passWord);
             //Submit login
             buttonLogin.Submit();
             //Wait until the page loads
             DpsLookUp.WaitUntilPageIsLoaded(webDriver);
             //Check if login was correct
-            if(webDriver.Url == initialAddress)
+            if(webDriver.Url == DpsLookUp.InitialUrl)
             {
                 //If URL remains the same, that does mean login failure
                 throw new Exception("Incorrect credentials");
             }
             else
             {
-                switch(searchBy)
+                //Browser is on a search page. Get the search category radiobuttons
+                var checkboxesSearchType = webDriver.FindElements(By.Name("searchtype"));
+                switch (searchBy)
                 {
-                    case "vimnumber":
+                    case "vinnumber":
+                        checkboxesSearchType[0].Click();
                         break;
                     case "licensenumber":
+                        checkboxesSearchType[1].Click();
                         break;
                     default:
-                        throw new Exception(@"[searchBy] must be equal to 'vimnumber' or 'licensenumber'");
+                        throw new Exception("[searchBy] must be equal to 'vinnumber' or 'licensenumber'");
+                }
+                //Populate input with the given VIM or license plate number
+                webDriver.FindElement(By.Name("searchData")).SendKeys(query);
+                //Submit input
+                webDriver.FindElement(By.Name("search_now")).Submit();
+                //Wait until AJAX performs to the end so the table appears
+                (new WebDriverWait(webDriver, DpsLookUp.Timeout))
+                .Until(ExpectedConditions.ElementExists(By.TagName("table")));
+                //Check if the query was correct
+                if (webDriver.FindElements(By.ClassName("alert-error")).Count != 0)
+                {
+                    //If there is HTML element with 'alert-error' class, that means data was wrong
+                    throw new Exception("[query] does not represent some existing [" + searchBy + "]");
+                }
+                else
+                {
+                    return webDriver.PageSource;
                 }
             }
-
-            //errorBar
-
-            Console.WriteLine("\nSUBMITTED LOGIN\n");
-
-           
-
-            IWebElement element =
-                (new WebDriverWait(webDriver, new TimeSpan(0, 0, 10)))
-                .Until(ExpectedConditions.ElementExists(By.Name("searchData")));
-
-            element.SendKeys("2GCEC13T861244730");
-
-            Console.WriteLine("\nSUBMITTED DATA\n");
-
-            var checkboxes = webDriver.FindElements(By.Name("searchtype"));
-            checkboxes[0].Click();
-
-
-
-            webDriver.FindElement(By.Name("search_now")).Submit();
-
-            Console.WriteLine("\nSUBMITTED SEARCH\n");
-
-            //table lookup-table
-
-            
-            IWebElement tableElement = 
-                (new WebDriverWait(webDriver, new TimeSpan(0, 0, 10)))
-                .Until(ExpectedConditions.ElementExists(By.TagName("table")));
-
-
-            Console.WriteLine("\n\n\n\nElement: " + tableElement.Text);
-            
-
-
-
-            /*
-             WebDriver driver = new FirefoxDriver();
-driver.get("http://somedomain/url_that_delays_loading");
-WebElement myDynamicElement = (new WebDriverWait(driver, 10))
-  .until(ExpectedConditions.presenceOfElementLocated(By.Name("searchData")));
-             */
-
-            /*
-            Assert.AreEqual(
-              "Andy",
-              _driver.FindElement(By.ClassName("sidebar-text5")).Text
-            );*/
-
-
         }
     }
 }
