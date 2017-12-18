@@ -39,10 +39,14 @@ namespace AtsUtilities.DpsLookUpParser
             Action<Int32> onProgressPercentageChanged)
         {
             //Instantiate web browser simulator
+            onStepChanged("Instantiating PhantomJS...");
+            onProgressPercentageChanged(0);
             var driverService = PhantomJSDriverService.CreateDefaultService();
             driverService.HideCommandPromptWindow = true;
             var webDriver = new PhantomJSDriver(driverService);
             //Navigate to the initial login page
+            onStepChanged("Navigating to initial page...");
+            onProgressPercentageChanged(25);
             webDriver.Navigate().GoToUrl(DpsLookUp.InitialUrl);
             //Wait until page is loaded and login button is available
             var buttonLogin =
@@ -52,6 +56,8 @@ namespace AtsUtilities.DpsLookUpParser
             webDriver.FindElement(By.Name("UserName")).SendKeys(userName);
             webDriver.FindElement(By.Name("Password")).SendKeys(passWord);
             //Submit login
+            onStepChanged("Submitting credentials...");
+            onProgressPercentageChanged(50);
             buttonLogin.Submit();
             //Wait until the page loads
             DpsLookUp.WaitUntilPageIsLoaded(webDriver);
@@ -81,6 +87,8 @@ namespace AtsUtilities.DpsLookUpParser
                 //Submit input
                 webDriver.FindElement(By.Name("search_now")).Submit();
                 //Wait until AJAX performs to the end so the table appears
+                onStepChanged("Loading data...");
+                onProgressPercentageChanged(75);
                 (new WebDriverWait(webDriver, DpsLookUp.Timeout))
                 .Until(ExpectedConditions.ElementExists(By.TagName("table")));
                 //Check if the query was correct
@@ -91,6 +99,8 @@ namespace AtsUtilities.DpsLookUpParser
                 }
                 else
                 {
+                    onStepChanged("Data was successfully loaded!");
+                    onProgressPercentageChanged(100);
                     return webDriver.PageSource;
                 }
             }

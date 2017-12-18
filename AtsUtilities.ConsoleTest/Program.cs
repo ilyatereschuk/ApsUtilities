@@ -27,8 +27,8 @@ namespace AtsUtilities.ConsoleTest
                 "notary123",
                 "vinnumber",
                 "2GCEC13T861244730",
-                (String s) => { },
-                (Int32 p) => { });
+                (String s) => { Console.WriteLine(s); },
+                (Int32 p) => { Console.WriteLine(p + "%"); });
 
             Console.WriteLine("\n\n\n\n\n\n" + res);
         }
