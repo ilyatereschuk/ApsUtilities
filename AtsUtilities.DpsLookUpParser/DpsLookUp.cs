@@ -16,12 +16,14 @@ namespace AtsUtilities.DpsLookUpParser
 {
     public class DpsLookUp
     {
+        private static readonly TimeSpan Timeout = new TimeSpan(0, 0, 10);
         public static String GetDpsLookupHtmlResult(
             String userName,
             String passWord,
-            String searchBy, //vimnumber / licensenumber
-            String query
-            )
+            String searchBy, 
+            String query,
+            Action<String> onStepChanged,
+            Action<Int32> onProgressPercentageChanged)
         {
             //http://www.autotitleservice.com/DPS/Account/Login?ReturnUrl=%2fDPS
 
@@ -31,40 +33,51 @@ namespace AtsUtilities.DpsLookUpParser
             The license plate number you can test with is: YLL248
             Please also test failed conditions. Thanks. VM LM
              */
+            //vimnumber / licensenumber
 
+            String initialAddress = "http://www.autotitleservice.com/DPS/Account/Login?ReturnUrl=%2fDPS";
 
-            var requestUri = "http://www.autotitleservice.com/DPS/Account/Login?ReturnUrl=%2fDPS";
+            /*
+             new WebDriverWait(driver, MyDefaultTimeout).Until(
+    d => ((IJavaScriptExecutor) d).ExecuteScript("return document.readyState").Equals("complete"));
+             */
 
-            
-
-            var _driver = new PhantomJSDriver();
-
-            _driver.Navigate().GoToUrl(
-                "http://www.autotitleservice.com/DPS/Account/Login?ReturnUrl=%2fDPS"
-            );
-
-            _driver.FindElement(By.Name("UserName")).SendKeys(userName);
-            _driver.FindElement(By.Name("Password")).SendKeys(passWord);
-            _driver.FindElement(By.Id("btnLogin")).Submit();
+            //1. Instantiate web browser simulator
+            var webDriver = new PhantomJSDriver();
+            //2. Navigate to the initial login page
+            webDriver.Navigate().GoToUrl(initialAddress);
+            //3. Wait until page is loaded and login button is available
+            var buttonLogin =
+                 (new WebDriverWait(webDriver, DpsLookUp.Timeout))
+                 .Until(ExpectedConditions.ElementExists(By.Id("btnLogin")));
+            //4. Get login and password fields
+            var fieldUserName = webDriver.FindElement(By.Name("UserName"));
+            var fieldPassWord = webDriver.FindElement(By.Name("Password"));
+            //5. Populate these fields
+            fieldUserName.SendKeys(userName);
+            fieldPassWord.SendKeys(passWord);
+            webDriver.FindElement(By.Name("UserName")).SendKeys(userName);
+            webDriver.FindElement(By.Name("Password")).SendKeys(passWord);
+            webDriver.FindElement(By.Id("btnLogin")).Submit();
 
             Console.WriteLine("\nSUBMITTED LOGIN\n");
 
            
 
             IWebElement element =
-                (new WebDriverWait(_driver, new TimeSpan(0, 0, 10)))
+                (new WebDriverWait(webDriver, new TimeSpan(0, 0, 10)))
                 .Until(ExpectedConditions.ElementExists(By.Name("searchData")));
 
             element.SendKeys("2GCEC13T861244730");
 
             Console.WriteLine("\nSUBMITTED DATA\n");
 
-            var checkboxes = _driver.FindElements(By.Name("searchtype"));
+            var checkboxes = webDriver.FindElements(By.Name("searchtype"));
             checkboxes[0].Click();
 
 
 
-            _driver.FindElement(By.Name("search_now")).Submit();
+            webDriver.FindElement(By.Name("search_now")).Submit();
 
             Console.WriteLine("\nSUBMITTED SEARCH\n");
 
@@ -72,7 +85,7 @@ namespace AtsUtilities.DpsLookUpParser
 
             
             IWebElement tableElement = 
-                (new WebDriverWait(_driver, new TimeSpan(0, 0, 10)))
+                (new WebDriverWait(webDriver, new TimeSpan(0, 0, 10)))
                 .Until(ExpectedConditions.ElementExists(By.TagName("table")));
 
 
