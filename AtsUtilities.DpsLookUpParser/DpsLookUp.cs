@@ -105,5 +105,20 @@ namespace AtsUtilities.DpsLookUpParser
                 }
             }
         }
+
+        public static String GetDpsLookupHtmlResultSilent(
+            String userName,
+            String passWord,
+            String searchBy,
+            String query)
+        {
+            return DpsLookUp.GetDpsLookupHtmlResult(
+                userName,
+                passWord,
+                searchBy,
+                query,
+                (String stepChangedMessage) => { },
+                (Int32 progressChangedValue) => { });
+        }
     }
 }
