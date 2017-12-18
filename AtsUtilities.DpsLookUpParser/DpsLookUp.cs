@@ -17,6 +17,16 @@ namespace AtsUtilities.DpsLookUpParser
     public class DpsLookUp
     {
         private static readonly TimeSpan Timeout = new TimeSpan(0, 0, 10);
+
+        private static void WaitUntilPageIsLoaded(IWebDriver webDriver)
+        {
+            (new WebDriverWait(webDriver, DpsLookUp.Timeout))
+            .Until(
+                jsExecutor => ((IJavaScriptExecutor)jsExecutor)
+                .ExecuteScript("return document.readyState")
+                .Equals("complete")
+            );
+        }
         public static String GetDpsLookupHtmlResult(
             String userName,
             String passWord,
@@ -42,23 +52,44 @@ namespace AtsUtilities.DpsLookUpParser
     d => ((IJavaScriptExecutor) d).ExecuteScript("return document.readyState").Equals("complete"));
              */
 
-            //1. Instantiate web browser simulator
+            //Instantiate web browser simulator
             var webDriver = new PhantomJSDriver();
-            //2. Navigate to the initial login page
+            //Navigate to the initial login page
             webDriver.Navigate().GoToUrl(initialAddress);
-            //3. Wait until page is loaded and login button is available
+            //Wait until page is loaded and login button is available
             var buttonLogin =
                  (new WebDriverWait(webDriver, DpsLookUp.Timeout))
                  .Until(ExpectedConditions.ElementExists(By.Id("btnLogin")));
-            //4. Get login and password fields
+            //Get login and password fields
             var fieldUserName = webDriver.FindElement(By.Name("UserName"));
             var fieldPassWord = webDriver.FindElement(By.Name("Password"));
-            //5. Populate these fields
+            //Populate these fields
             fieldUserName.SendKeys(userName);
             fieldPassWord.SendKeys(passWord);
-            webDriver.FindElement(By.Name("UserName")).SendKeys(userName);
-            webDriver.FindElement(By.Name("Password")).SendKeys(passWord);
-            webDriver.FindElement(By.Id("btnLogin")).Submit();
+            //Submit login
+            buttonLogin.Submit();
+            //Wait until the page loads
+            DpsLookUp.WaitUntilPageIsLoaded(webDriver);
+            //Check if login was correct
+            if(webDriver.Url == initialAddress)
+            {
+                //If URL remains the same, that does mean login failure
+                throw new Exception("Incorrect credentials");
+            }
+            else
+            {
+                switch(searchBy)
+                {
+                    case "vimnumber":
+                        break;
+                    case "licensenumber":
+                        break;
+                    default:
+                        throw new Exception(@"[searchBy] must be equal to 'vimnumber' or 'licensenumber'");
+                }
+            }
+
+            //errorBar
 
             Console.WriteLine("\nSUBMITTED LOGIN\n");
 
