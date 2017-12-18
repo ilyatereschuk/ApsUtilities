@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace AtsUtilities.DpsLookUpParserWithProgress
+namespace AtsUtilities.WindowTest
 {
     static class Program
     {
@@ -12,13 +12,13 @@ namespace AtsUtilities.DpsLookUpParserWithProgress
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        public static String Main(String[] arguments)
+        public static void Main(String[] arguments)
         {
+            //Run it by launching TestInWindow.bat
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new DpsLookUpParserWithProgressWindow(arguments));
-
-            return String.Empty;
+            Application.Run(new DpsLookUpWindow(arguments));
         }
     }
 }

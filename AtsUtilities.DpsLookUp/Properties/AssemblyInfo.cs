@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("AtsUtilities.DpsLookUpParserWithProgress")]
+[assembly: AssemblyTitle("AtsUtilities.DpsLookUp")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("AtsUtilities.DpsLookUpParserWithProgress")]
-[assembly: AssemblyCopyright("Copyright ©  2017")]
+[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyProduct("AtsUtilities.DpsLookUp")]
+[assembly: AssemblyCopyright("Copyright © Microsoft 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("ab1f392d-cdba-4d1d-9fd4-d259cdfb4227")]
+[assembly: Guid("a827cfa0-b728-4302-8bed-6ff9b064246a")]
 
 // Version information for an assembly consists of the following four values:
 //
